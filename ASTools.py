@@ -1150,6 +1150,8 @@ class SwDeploymentTable(xmlAsFile):
         source = ('Libraries', parentFolder, name, 'lby')
         attributes['Source'] = '.'.join(source)
         attributes['Memory'] = getMemoryType(lbyPath, memory)
+        if attributes['Memory'] == 'None':
+            self._addAnsicIncludeDirectory(lbyPath)
         attributes['Language'] = language
         attributes['Debugging'] = 'true'
         for attributeName in attributeOverrides:
@@ -1196,6 +1198,14 @@ class SwDeploymentTable(xmlAsFile):
         else:
             self.root.insert(index, element)
         self.write()
+
+    def _addAnsicIncludeDirectory(self, path: str):
+        cpuPackage = xmlAsFile(os.path.join(self.dirPath, 'Cpu.pkg'))
+        buildElement = cpuPackage.find('Configuration', 'Build')
+        if buildElement is not None:
+            ansicIncludeDirectories = buildElement.get('AnsicIncludeDirectories', '')
+            buildElement.set('AnsicIncludeDirectories', ','.join([ansicIncludeDirectories, path]))
+            cpuPackage.write()
 
     @property
     def libraries(self) -> List:
