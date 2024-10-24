@@ -1145,7 +1145,7 @@ class SwDeploymentTable(xmlAsFile):
         attributes['Name'] = name
         source = ('Libraries', parentFolder, name, 'lby')
         attributes['Source'] = '.'.join(source)
-        attributes['Memory'] = memory
+        attributes['Memory'] = getMemoryType(lbyPath, memory)
         attributes['Language'] = language
         attributes['Debugging'] = 'true'
         for attributeName in attributeOverrides:
@@ -1352,6 +1352,11 @@ def convertWinPathToAsPath(winPath):
         # path is relative
         return os.path.join('\\', os.path.normpath(winPath))
 
+def getMemoryType(path: str, default: str) -> str:
+    for file_name in os.listdir(path):
+        if os.path.splitext(file_name)[1] in ['.fun', '.typ']:
+            return default
+    return 'None'
 
 # TODO: Needed by Library and Package Class. Maybe leave as function
 def getLibraryType(path: str) -> str:
