@@ -967,8 +967,6 @@ class Package(xmlAsFile):
             super().__init__(path)
         
     def synchPackageFile(self):
-        # TODO: Does not handle references
-
         items = [i for i in os.listdir(self.dirPath)]
 
         # TODO: update package with directory
@@ -976,6 +974,9 @@ class Package(xmlAsFile):
 
         # Remove items not in dir from pkg 
         for element in self.objects:
+            # continue if reference and path exists
+            if element.get('Reference') == "true" and os.path.isdir(element.text):
+                continue
             if element.text not in items:
                 self._removePkgObject(element.text)
             else:
