@@ -70,7 +70,10 @@ PVIReturnCodeText = {
 }
 
 def getASPath(version:str) -> str:
-    base = "C:\\BrAutomation"
+    if version == 'AS412':
+        base = 'C:\\Program Files\\BRAutomation4'
+    else:
+        base = "C:\\BrAutomation"
     if version.lower() == 'base':
         return base
     else:
