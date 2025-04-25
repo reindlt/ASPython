@@ -185,7 +185,8 @@ def CreateARSimStructure(RUCPackage:str, destination:str, version:str, startSim:
         f.write(f'CreateARsimStructure "{RUCPackage}", "{destination}", "Start={int(startSim)}"\n')
         # If ARsim is being started, add a line that waits for a connection to be established.
         if startSim:
-            f.write('Connection "/IF=TCPIP /SA=1", "/DA=2 /DAIP=127.0.0.1 /REPO=11160", "WT=120"')
+            f.write('Connection "/IF=TCPIP /SA=1", "/DA=2 /DAIP=127.0.0.1 /REPO=11160", "WT=120"\n')
+            f.write('Logger "System", "$arlogsys", ".arl", "log.arl"\n')
 
     arguments = []
     print('PVI version: ' + version)
