@@ -963,8 +963,6 @@ class Package(xmlAsFile):
             super().__init__(path)
         
     def synchPackageFile(self):
-        # TODO: Does not handle references
-
         items = [i for i in os.listdir(self.dirPath)]
 
         # TODO: update package with directory
@@ -972,6 +970,9 @@ class Package(xmlAsFile):
 
         # Remove items not in dir from pkg 
         for element in self.objects:
+            # continue if reference and path exists
+            if element.get('Reference') == "true" and os.path.isdir(element.text):
+                continue
             if element.text not in items:
                 self._removePkgObject(element.text)
             else:
@@ -986,6 +987,10 @@ class Package(xmlAsFile):
         self.write()
         
         return self
+
+    def addObjectAsReference(self, path):
+        '''Add file or folder to package and directory as reference'''
+        return self._addPkgObject(path, True)
 
     def addObject(self, path, reference=False):
         '''Copy file or folder to package and directory'''
@@ -1141,7 +1146,7 @@ class SwDeploymentTable(xmlAsFile):
         attributes['Name'] = name
         source = ('Libraries', parentFolder, name, 'lby')
         attributes['Source'] = '.'.join(source)
-        attributes['Memory'] = memory
+        attributes['Memory'] = getMemoryType(lbyPath, memory)
         attributes['Language'] = language
         attributes['Debugging'] = 'true'
         for attributeName in attributeOverrides:
@@ -1348,6 +1353,11 @@ def convertWinPathToAsPath(winPath):
         # path is relative
         return os.path.join('\\', os.path.normpath(winPath))
 
+def getMemoryType(path: str, default: str) -> str:
+    for file_name in os.listdir(path):
+        if os.path.splitext(file_name)[1] in ['.fun', '.typ']:
+            return default
+    return 'None'
 
 # TODO: Needed by Library and Package Class. Maybe leave as function
 def getLibraryType(path: str) -> str:
