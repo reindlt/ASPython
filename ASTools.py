@@ -177,7 +177,7 @@ def buildASProject(project, ASPath:str, configuration='', buildMode='Build', bui
 
     return process
 
-def CreateARSimStructure(RUCPackage:str, destination:str, version:str, startSim:bool=False):
+def CreateARSimStructure(RUCPackage:str, destination:str, version:str, startSim:bool=False, username: str | None = None, password: str | None = None):
     logging.info(f'Creating ARSim structure at {destination}')
     RUCPath = os.path.dirname(RUCPackage)
     RUCPil = os.path.join(RUCPath, 'CreateARSim.pil')
@@ -185,7 +185,11 @@ def CreateARSimStructure(RUCPackage:str, destination:str, version:str, startSim:
         f.write(f'CreateARsimStructure "{RUCPackage}", "{destination}", "Start={int(startSim)}"\n')
         # If ARsim is being started, add a line that waits for a connection to be established.
         if startSim:
-            f.write('Connection "/IF=TCPIP /SA=1", "/DA=2 /DAIP=127.0.0.1 /REPO=11160", "WT=120"\n')
+            if username and password:
+                ansl_authentication = f"/UN='{username}' /PW='{password}'"
+                f.write(f'Connection "/IF=TCPIP /SA=1", "/DA=2 /DAIP=127.0.0.1 /REPO=11160 {ansl_authentication}", "WT=120"\n')
+            else:
+                f.write('Connection "/IF=TCPIP /SA=1", "/DA=2 /DAIP=127.0.0.1 /REPO=11160", "WT=120"\n')
             f.write('Logger "System", "$arlogsys", ".arl", "log.arl"\n')
 
     arguments = []
@@ -837,7 +841,9 @@ class Project(xmlAsFile):
     def createSim(self, *configNames, destination, startSim = False):
         for configName in configNames:
             config = self.getConfigByName(configName)
-            CreateARSimStructure(os.path.join(self.binaryPath, config.name, config.hardware, 'RUCPackage', 'RUCPackage.zip'), destination, self.ASVersion, startSim=startSim)
+            username = os.getenv("BUR_ANSL_USER")
+            password = os.getenv("BUR_ANSL_PASSWORD")
+            CreateARSimStructure(os.path.join(self.binaryPath, config.name, config.hardware, 'RUCPackage', 'RUCPackage.zip'), destination, self.ASVersion, startSim, username, password)
         pass
 
     def startSim(self, configName:str, build=False):
