@@ -177,7 +177,7 @@ def buildASProject(project, ASPath:str, configuration='', buildMode='Build', bui
 
     return process
 
-def CreateARSimStructure(RUCPackage:str, destination:str, version:str, startSim:bool=False, username: str | None = None, password: str | None = None):
+def CreateARSimStructure(RUCPackage:str, destination:str, version:str, startSim:bool=False, username: str | None = None, password: str | None = None, wait: str | None = None):
     logging.info(f'Creating ARSim structure at {destination}')
     RUCPath = os.path.dirname(RUCPackage)
     RUCPil = os.path.join(RUCPath, 'CreateARSim.pil')
@@ -190,6 +190,8 @@ def CreateARSimStructure(RUCPackage:str, destination:str, version:str, startSim:
                 f.write(f'Connection "/IF=TCPIP /SA=1", "/DA=2 /DAIP=127.0.0.1 /REPO=11160 {ansl_authentication}", "WT=120"\n')
             else:
                 f.write('Connection "/IF=TCPIP /SA=1", "/DA=2 /DAIP=127.0.0.1 /REPO=11160", "WT=120"\n')
+            if wait:
+                f.write(f'Wait "{wait}"\n')
             f.write('Logger "System", "$arlogsys", ".arl", "log.arl"\n')
 
     arguments = []
@@ -838,12 +840,10 @@ class Project(xmlAsFile):
         '''*Deprecated* - see createSim'''
         return self.createSim(configNames, startSim=startSim)
     
-    def createSim(self, *configNames, destination, startSim = False):
+    def createSim(self, *configNames, destination, startSim = False, username = None, password = None, wait = None):
         for configName in configNames:
             config = self.getConfigByName(configName)
-            username = os.getenv("BUR_ANSL_USER")
-            password = os.getenv("BUR_ANSL_PASSWORD")
-            CreateARSimStructure(os.path.join(self.binaryPath, config.name, config.hardware, 'RUCPackage', 'RUCPackage.zip'), destination, self.ASVersion, startSim, username, password)
+            CreateARSimStructure(os.path.join(self.binaryPath, config.name, config.hardware, 'RUCPackage', 'RUCPackage.zip'), destination, self.ASVersion, startSim, username, password, wait)
         pass
 
     def startSim(self, configName:str, build=False):
