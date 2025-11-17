@@ -1129,7 +1129,7 @@ class SwDeploymentTable(xmlAsFile):
         obj.append(element)
         self.write()
 
-    def deployTask(self, taskFolder, taskName, taskClass):
+    def deployTask(self, taskFolder, taskName, taskClass, buildOptions):
         # First get a handle on the target task class.
         cyclicName = "Cyclic#" + [s for s in str(taskClass) if s.isdigit()][0]
         tc = self.find(f"TaskClass[@Name='{cyclicName}']")
@@ -1138,7 +1138,7 @@ class SwDeploymentTable(xmlAsFile):
         if(preexistingTask is not None):
             return
         # Task isn't in there yet, so let's add it. 
-        element = self._createTaskElement(taskFolder, taskName)
+        element = self._createTaskElement(taskFolder, taskName, buildOptions=buildOptions)
         tc.append(element)
         self.write()
 
@@ -1161,7 +1161,7 @@ class SwDeploymentTable(xmlAsFile):
         element.tail = "\n" #+2*"  " Just stick with newline for now
         return element
 
-    def _createTaskElement(self, taskFolder, taskName, memory: str = 'UserROM') -> ET.Element:
+    def _createTaskElement(self, taskFolder, taskName, memory: str = 'UserROM', buildOptions: str = '') -> ET.Element:
         actualTaskFolderPath = getActualPathFromLogicalPath(taskFolder)
         prgPath = os.path.join(actualTaskFolderPath, taskName)
         task = Task(prgPath)
@@ -1181,6 +1181,8 @@ class SwDeploymentTable(xmlAsFile):
         attributes['Memory'] = memory
         attributes['Language'] = language
         attributes['Debugging'] = 'true'
+        if buildOptions:
+            attributes['BuildOptions'] = buildOptions
         element = ET.Element('Task', attrib=attributes)
         element.tail = "\n" #+2*"  " Just stick with newline for now
         return element
