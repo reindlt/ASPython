@@ -1285,6 +1285,13 @@ def getConfigType(config: BuildConfig) -> str:
             if config.hardware.lower().startswith(key):
                     return value
 
+    # for backwards-compatibility leave current logic but also look for hardware
+    # name as it contains architecture at S7 (SG4_X20_Intel or SG4_X20_ARM)
+    if config.name.lower().endswith('intel'):
+        return sg4
+    if config.name.lower().endswith('arm'):
+        return sg4arm
+
     return sg4
 
 # Retrieve the path to the library (location of .lby), given a package and the library name
