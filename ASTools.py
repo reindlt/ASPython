@@ -1242,15 +1242,65 @@ class CpuConfig(xmlAsFile):
             return(self.arElement.attrib['Version'])
         else:
             return None
-    
+
     def setArVersion(self, value):
         self.arElement.attrib['Version'] = value
         self.write()
-        
+
+    def getIecAdditionalBuildOptions(self):
+        if 'IecAdditionalBuildOptions' in self.buildElement.attrib:
+            return(self.buildElement.attrib['IecAdditionalBuildOptions'])
+        else:
+            return None
+
+    def setIecAdditionalBuildOptions(self, value):
+        self.buildElement.attrib['IecAdditionalBuildOptions'] = value
+        self.write()
+
+    def removeIecAdditionalBuildOptions(self, *options) -> bool:
+        '''Remove one or more flags from the IecAdditionalBuildOptions attribute.
+
+        Each option may consist of multiple whitespace separated tokens
+        (e.g. '-D _CHECKLIB_FORCE_RESTART'). Only exact token sequences are
+        removed, so '-D _CHECKLIB' will not match '-D _CHECKLIB_FORCE_RESTART'.
+        Returns True if the attribute was changed, otherwise False.
+        '''
+        current = self.getIecAdditionalBuildOptions()
+        if current is None:
+            return False
+
+        tokens = current.split()
+        for option in options:
+            removeTokens = option.split()
+            if not removeTokens:
+                continue
+            filtered = []
+            i = 0
+            while i < len(tokens):
+                if tokens[i:i + len(removeTokens)] == removeTokens:
+                    i += len(removeTokens)
+                else:
+                    filtered.append(tokens[i])
+                    i += 1
+            tokens = filtered
+
+        newValue = ' '.join(tokens)
+        if newValue == current:
+            return False
+
+        if newValue:
+            self.setIecAdditionalBuildOptions(newValue)
+        else:
+            # Nothing left, drop the attribute entirely.
+            del self.buildElement.attrib['IecAdditionalBuildOptions']
+            self.write()
+        return True
+
     # Define accessible properties.
     gccVersion = property(getGccVersion, setGccVersion)
     preBuildStep = property(getPreBuildStep, setPreBuildStep)
     arVersion = property(getArVersion, setArVersion)
+    iecAdditionalBuildOptions = property(getIecAdditionalBuildOptions, setIecAdditionalBuildOptions)
 
 # TODO: Remove
 def getConfigs(physicalPath: str) -> List[BuildConfig]:
