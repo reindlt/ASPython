@@ -192,7 +192,9 @@ def CreateARSimStructure(RUCPackage:str, destination:str, version:str, startSim:
                 f.write('Connection "/IF=TCPIP /SA=1", "/DA=2 /DAIP=127.0.0.1 /REPO=11160", "WT=120"\n')
             if wait:
                 f.write(f'Wait "{wait}"\n')
+            f.write('OnErrorResume\n')
             f.write('Logger "System", "IecChkLog", ".arl", "log.arl"\n')
+            f.write('ClearError\n')
 
     arguments = []
     print('PVI version: ' + version)
